@@ -3,7 +3,7 @@ import java.util.concurrent.BlockingDeque;
 
 public class Basket {
 	
-	BlockingDeque< String> basket = (BlockingDeque<String>) new ArrayBlockingQueue<String> (3);
+	ArrayBlockingQueue<String> basket = new ArrayBlockingQueue<String> (3);
 	public void produce() throws InterruptedException {
 		basket.put("apple");
 	}

@@ -1,53 +1,54 @@
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingDeque;
-import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 public class test {
 	
-	public class Basket {
-		
-		BlockingDeque< String> basket = (BlockingDeque<String>) new ArrayBlockingQueue<String> (3);
-		public void produce() throws InterruptedException {
-			basket.put("apple");
-		}
-		public String consume() throws InterruptedException {
-			return basket.take();
-		}
-		public int getBasketSize() {
-			return basket.size();
-		}
-	}
 
 	public static void main(String[] args) {
-testStart();
+			testStart();
 	}
 
 	public static void testStart() {
-		Basket basket = new Basket();
-		class producer implements Runnable{
+		Basket basket =new Basket ();
+		class producer extends Thread{
+			volatile  boolean stop = false;
 			@Override
 			public void run() {
-				while (true) {
-					System.out.println("生产者生产苹果中"+System.currentTimeMillis());
-					basket.produce();
-					System.out.println("生产者生产苹果结束"+System.currentTimeMillis());
+				while (!stop) {
+					try {
+						basket.produce();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					System.out.println("生产苹果结束");
 					System.out.println("当前篮子中有苹果: "+basket.getBasketSize()+" 个");
-					Thread.sleep(300);
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 				
 			}
 		}
 		
-		class consumer implements Runnable{
+		class consumer extends Thread{
+			volatile  boolean stop = false;
 			@Override
 			public void run() {
-				while (true) {
-					System.out.println("消费者生产苹果中"+System.currentTimeMillis());
-					basket.consume();
-					System.out.println("消费者生产苹果结束"+System.currentTimeMillis());
-					System.out.println("当前篮子中有苹果: "+basket.getBasketSize()+" 个");
-					Thread.sleep(1000);
+				while (!stop) {
+					
+					try {	
+						Thread.sleep(2000);
+						if (basket.consume().equals("apple")) {
+							System.out.println("消费苹果成功");
+							System.out.println("当前篮子中有苹果: "+basket.getBasketSize()+" 个");
+						}else {
+							System.out.println("等待苹果");
+						}
+						
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
 				}
 				
 			}
@@ -58,8 +59,14 @@ testStart();
 		consumer cons = new consumer();
 		service.submit(prod);
 		service.submit(cons);
-		Thread.sleep(10000);
-		service.shutdown();
+		try {
+		
+			Thread.sleep(10000);
+			
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+//		service.shutdown();
 		
 	}
 }
